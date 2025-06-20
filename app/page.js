@@ -1,102 +1,306 @@
-import Image from "next/image";
+'use client'
+import { useState } from 'react';
+import Head from 'next/head';
+
+const mockProduct = {
+  id: 'erp-enterprise-2023',
+  name: 'EnterpriseERP Pro',
+  tagline: 'Comprehensive Business Management Solution',
+  description: 'EnterpriseERP Pro is an all-in-one business management solution that integrates all essential functions including accounting, inventory, CRM, HR, and more into a single, powerful platform.',
+  price: 4999,
+  features: [
+    'Real-time business analytics',
+    'Multi-currency and multi-language support',
+    'Customizable workflows',
+    'Cloud and on-premise deployment',
+    'Mobile app for on-the-go access',
+    'API for third-party integrations',
+    'Role-based access control',
+    'Automated reporting'
+  ],
+  modules: [
+    { name: 'Financial Management', included: true },
+    { name: 'Inventory Control', included: true },
+    { name: 'CRM', included: true },
+    { name: 'HR & Payroll', included: true },
+    { name: 'Project Management', included: true },
+    { name: 'E-commerce Integration', included: false },
+    { name: 'Advanced Analytics', included: false },
+    { name: 'AI Forecasting', included: false }
+  ],
+  testimonials: [
+    {
+      name: 'Sarah Johnson',
+      role: 'CFO, TechCorp',
+      quote: 'EnterpriseERP Pro transformed our operations. We reduced manual processes by 70% in the first 3 months.'
+    },
+    {
+      name: 'Michael Chen',
+      role: 'Operations Director, GlobalTrade',
+      quote: 'The inventory module alone paid for the system within 6 months through reduced waste and better tracking.'
+    }
+  ],
+  supportOptions: [
+    '24/7 Phone Support',
+    'Dedicated Account Manager',
+    'Online Knowledge Base',
+    'Quarterly Training Webinars'
+  ]
+};
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [selectedTab, setSelectedTab] = useState('overview');
+  const [quantity, setQuantity] = useState(1);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0
+    }).format(price);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Head>
+        <title>{mockProduct.name} | EnterpriseERP Solutions</title>
+        <meta name="description" content={mockProduct.description} />
+      </Head>
+
+      {/* Header */}
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">{mockProduct.name}</h1>
+              <p className="mt-1 text-lg text-indigo-600">{mockProduct.tagline}</p>
+            </div>
+            <div className="mt-4 md:mt-0">
+              <button className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+                Request Demo
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Left Column - Product Info */}
+          <div className="lg:w-2/3">
+            {/* Product Image/Placeholder */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 h-64 flex items-center justify-center">
+                <span className="text-white text-2xl font-bold">EnterpriseERP Pro Dashboard</span>
+              </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+              <div className="border-b border-gray-200">
+                <nav className="flex -mb-px">
+                  {['overview', 'features', 'modules', 'testimonials', 'support'].map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setSelectedTab(tab)}
+                      className={`whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm ${selectedTab === tab
+                        ? 'border-indigo-500 text-indigo-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        }`}
+                    >
+                      {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    </button>
+                  ))}
+                </nav>
+              </div>
+
+              <div className="p-6">
+                {selectedTab === 'overview' && (
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">Product Overview</h2>
+                    <p className="text-gray-700 mb-4">{mockProduct.description}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                      {mockProduct.features.slice(0, 4).map((feature, index) => (
+                        <div key={index} className="flex items-start">
+                          <svg className="h-5 w-5 text-indigo-500 mt-0.5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span className="text-gray-700">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {selectedTab === 'features' && (
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">Key Features</h2>
+                    <ul className="space-y-3">
+                      {mockProduct.features.map((feature, index) => (
+                        <li key={index} className="flex items-start">
+                          <svg className="h-5 w-5 text-indigo-500 mt-0.5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span className="text-gray-700">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {selectedTab === 'modules' && (
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">Included Modules</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {mockProduct.modules.map((module, index) => (
+                        <div key={index} className="flex items-center">
+                          {module.included ? (
+                            <svg className="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          ) : (
+                            <svg className="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          )}
+                          <span className={`${module.included ? 'text-gray-800' : 'text-gray-400'}`}>
+                            {module.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {selectedTab === 'testimonials' && (
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">Customer Testimonials</h2>
+                    <div className="space-y-6">
+                      {mockProduct.testimonials.map((testimonial, index) => (
+                        <div key={index} className="bg-gray-50 p-6 rounded-lg">
+                          <p className="text-gray-700 italic mb-4">"{testimonial.quote}"</p>
+                          <div className="font-medium">
+                            <p className="text-gray-900">{testimonial.name}</p>
+                            <p className="text-indigo-600">{testimonial.role}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {selectedTab === 'support' && (
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">Support Options</h2>
+                    <ul className="space-y-3">
+                      {mockProduct.supportOptions.map((option, index) => (
+                        <li key={index} className="flex items-start">
+                          <svg className="h-5 w-5 text-indigo-500 mt-0.5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                          </svg>
+                          <span className="text-gray-700">{option}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Pricing & CTA */}
+          <div className="lg:w-1/3">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden sticky top-8">
+              <div className="p-6 border-b border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">Pricing</h2>
+                <div className="flex items-baseline">
+                  <span className="text-3xl font-bold text-gray-900">{formatPrice(mockProduct.price)}</span>
+                  <span className="ml-1 text-gray-500">/year</span>
+                </div>
+                <p className="mt-2 text-gray-600">Volume discounts available</p>
+              </div>
+
+              <div className="p-6">
+                <div className="mb-4">
+                  <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">
+                    Number of Users
+                  </label>
+                  <select
+                    id="quantity"
+                    value={quantity}
+                    onChange={(e) => setQuantity(parseInt(e.target.value))}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    {[1, 5, 10, 25, 50, 100].map((num) => (
+                      <option key={num} value={num}>{num} user{num !== 1 ? 's' : ''}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="mb-6">
+                  <div className="flex justify-between py-2 border-b border-gray-200">
+                    <span className="text-gray-600">Base Price</span>
+                    <span className="text-gray-900">{formatPrice(mockProduct.price)}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-gray-200">
+                    <span className="text-gray-600">Users ({quantity})</span>
+                    <span className="text-gray-900">{formatPrice(mockProduct.price * 0.2 * (quantity - 1))}</span>
+                  </div>
+                  <div className="flex justify-between py-2 font-bold">
+                    <span className="text-gray-900">Total</span>
+                    <span className="text-gray-900">
+                      {formatPrice(mockProduct.price + mockProduct.price * 0.2 * (quantity - 1))}
+                    </span>
+                  </div>
+                </div>
+
+                <button className="w-full bg-indigo-600 text-white py-3 px-4 rounded-md font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors mb-4">
+                  Add to Cart
+                </button>
+
+                <button className="w-full bg-white text-indigo-600 py-3 px-4 rounded-md font-medium border border-indigo-600 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                  Contact Sales
+                </button>
+
+                <div className="mt-6 text-center">
+                  <p className="text-sm text-gray-500">30-day money back guarantee</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      <footer className="bg-gray-800 text-white py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+              <h3 className="text-lg font-semibold mb-4">EnterpriseERP</h3>
+              <p className="text-gray-400">Comprehensive business solutions for enterprises of all sizes.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+              <ul className="space-y-2">
+                <li><a href="#" className="text-gray-400 hover:text-white">Products</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white">Solutions</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white">Pricing</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white">Resources</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Contact</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li>support@enterpriseerp.com</li>
+                <li>+1 (800) 123-4567</li>
+                <li>123 Business Ave, Suite 100</li>
+                <li>San Francisco, CA 94107</li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400">
+            <p>© 2023 EnterpriseERP Solutions. All rights reserved.</p>
+          </div>
+        </div>
       </footer>
     </div>
   );
