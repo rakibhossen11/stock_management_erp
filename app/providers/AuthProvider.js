@@ -11,41 +11,98 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const checkSession = async () => {
-    try {
-      const res = await fetch('/api/auth/session');
-      const data = await res.json();
-      console.log(data);
-      setUser(data.session || null);
-    } catch (error) {
-      console.error('Session check failed:', error);
-    } finally {
-      setLoading(false);
+   useEffect(() => {
+    async function loadUser() {
+      try {
+        // Check if we have a token
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        
+        if (token) {
+          // Verify token with backend
+          const response = await fetch('/api/auth/verify', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (response.ok) {
+            const userData = await response.json();
+            setUser(userData);
+          } else {
+            // Token is invalid, clear it
+            localStorage.removeItem('token');
+          }
+        }
+      } catch (error) {
+        console.error('Error loading user:', error);
+      } finally {
+        setLoading(false);
+      }
     }
-  };
+
+    loadUser();
+  }, []);
+
+  // const checkSession = async () => {
+  //   try {
+  //     const res = await fetch('/api/auth/session');
+  //     console.log(res);
+  //     const data = await res.json();
+  //     console.log(data);
+  //     // setUser(data.session || null);
+  //   } catch (error) {
+  //     console.error('Session check failed:', error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const login = async (email, password) => {
-    // console.log(email,password);
     try {
-      const res = await fetch('/api/auth/signin', {
+      const response = await fetch('/api/auth/signin', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
       });
-      
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error);
-      }
 
-      const data = await res.json();
-      console.log("login",data);
-      setUser(data.user);
-      return data;
+      if (response.ok) {
+        const { user: userData, token } = await response.json();
+        localStorage.setItem('token', token);
+        setUser(userData);
+        router.push('/dashboard');
+      } else {
+        throw new Error('Login failed');
+      }
     } catch (error) {
+      console.error('Login error:', error);
       throw error;
     }
   };
+
+  // const login = async (email, password) => {
+  //   // console.log(email,password);
+  //   try {
+  //     const res = await fetch('/api/auth/signin', {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({email, password}),
+  //     });
+      
+  //     if (!res.ok) {
+  //       const error = await res.json();
+  //       throw new Error(error.error);
+  //     }
+
+  //     const data = await res.json();
+  //     console.log("login",data);
+  //     setUser(data.user);
+  //     return data;
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // };
 
 //   user registration
   const register = async (name, email, password) => {
@@ -78,7 +135,7 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
-    checkSession();
+    // checkSession();
   }, []);
 
   return (
@@ -89,7 +146,6 @@ export function AuthProvider({ children }) {
         login,
         register,
         logout,
-        checkSession
       }}
     >
       {children}

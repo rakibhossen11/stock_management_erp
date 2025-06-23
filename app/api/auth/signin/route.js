@@ -1,44 +1,73 @@
+import { verifyPassword, createSession } from '@/app/lib/auth';
 import { NextResponse } from 'next/server';
-import dbConnect from '@/app/lib/dbConnect';
 import User from '@/app/models/User';
-import { generateToken } from '@/app/lib/jwt';
-import { setAuthCookie } from '@/app/lib/auth';
+import { dbConnect } from '@/app/lib/dbConnect'; // MongoDB connection helper
+import  jwt from 'jsonwebtoken';
 
 export async function POST(request) {
   await dbConnect();
-
   try {
     const { email, password } = await request.json();
+    console.log("from api", email, password);
 
-    const user = await User.findOne({ email }).select('+password');
-    if (!user) {
+    if (!email || !password) {
       return NextResponse.json(
-        { success: false, error: 'Invalid credentials' },
-        { status: 401 }
+        { error: 'Email and password are required' },
+        { status: 400 }
       );
     }
 
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid credentials' },
-        { status: 401 }
-      );
-    }
+    try {
+      const user = await User.findOne({ email });
+//     console.log( user);
+      console.log(user);
 
-    const token = generateToken(user._id);
-    
-    const response = NextResponse.json(
-      { success: true, data: { id: user._id, name: user.name, email: user.email } },
-      { status: 200 }
+      if (!user) {
+        return NextResponse.json(
+          { error: 'Invalid credentials' },
+          { status: 401 }
+        );
+      }
+
+      // Verify password
+      const isValid = await verifyPassword(password, user.password);
+      if (!isValid) {
+        return NextResponse.json(
+          { error: 'Invalid credentials' },
+          { status: 401 }
+        );
+      }
+
+      const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
     );
-    
-    setAuthCookie(response, token);
-    return response;
 
+      // Create session - using user._id (MongoDB's ObjectId)
+      // await createSession(user._id);
+
+      return NextResponse.json({
+        success: true,
+        user: {
+          user_id: user._id, // Convert ObjectId to string
+          name: user.name,
+          email: user.email,
+          // user_account_no: user.user_account_no,
+        },
+        token
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      return NextResponse.json(
+        { error: 'Login failed' },
+        { status: 500 }
+      );
+    }
   } catch (error) {
+    console.error('Login error:', error);
     return NextResponse.json(
-      { success: false, error: error.message },
+      { error: 'Login failed' },
       { status: 500 }
     );
   }
