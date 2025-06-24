@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
 export default function Navbar() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, logout } = useAuth();
   console.log("from header",user); 
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -146,10 +146,10 @@ export default function Navbar() {
                         Settings
                       </Link>
                       <button
-                        onClick={signOut}
+                        onClick={logout}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        Sign out
+                        log out
                       </button>
                     </div>
                   )}

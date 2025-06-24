@@ -81,58 +81,53 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // const login = async (email, password) => {
-  //   // console.log(email,password);
-  //   try {
-  //     const res = await fetch('/api/auth/signin', {
-  //       method: 'POST',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify({email, password}),
-  //     });
-      
-  //     if (!res.ok) {
-  //       const error = await res.json();
-  //       throw new Error(error.error);
-  //     }
-
-  //     const data = await res.json();
-  //     console.log("login",data);
-  //     setUser(data.user);
-  //     return data;
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // };
-
-//   user registration
+  //   user registration
   const register = async (name, email, password) => {
-    // console.log("register",name, email, password);
+    console.log("register",name, email, password);
     try {
-      const res = await fetch('/api/auth/signup', {
+      const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify( name, email, password ),
+        body: JSON.stringify({ name, email, password }),
       });
+      console.log(response);
 
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error);
+      if (response.ok) {
+        const { user: userData, token } = await response.json();
+        localStorage.setItem('token', token);
+        setUser(userData);
+        router.push('/dashboard');
+      } else {
+        throw new Error('Register failed');
       }
 
-      const data = await res.json();
-      console.log("re",data);
-      setUser(data.user);
-      return data;
+      // if (!res.ok) {
+      //   const error = await res.json();
+      //   throw new Error(error.error);
+      // }
+
+      // const data = await res.json();
+      // console.log("re",data);
+      // setUser(data.user);
+      // router.push('/dashboard');
+      // return data;
     } catch (error) {
+      console.error('Register error:', error);
       throw error;
     }
   };
 
-  const logout = async () => {
-    await fetch('/api/auth/signout', { method: 'POST' });
+  const logout = () => {
+    localStorage.removeItem('token');
     setUser(null);
     router.push('/auth/login');
   };
+
+  // const logout = async () => {
+  //   await fetch('/api/auth/signout', { method: 'POST' });
+  //   setUser(null);
+  //   router.push('/auth/login');
+  // };
 
   useEffect(() => {
     // checkSession();
