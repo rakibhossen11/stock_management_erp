@@ -12,13 +12,13 @@ export default function CreateProduct() {
   // Form state
   const [product, setProduct] = useState({
     name: '',
-    code: '',
+    productCode: '',
     description: '',
     category: '',
     provider: '',
     purchasePrice: '',
     sellingPrice: '',
-    inStock: '',
+    stock: '',
     reorderLevel: '',
     unit: 'pcs',
     taxRate: 0,
@@ -32,11 +32,30 @@ export default function CreateProduct() {
     setIsSubmitting(true);
     
     try {
+      // Check if we have a token
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        console.log('token', token);
       // Replace with actual API call
       console.log('Creating product:', product);
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // Add the Authorization header
+        },
+        body: JSON.stringify(product),
+      })
+      
+      // const data = await res.json()
+      
+      // if (!res.ok) throw new Error(data.error || 'Failed to add customer')
+      
+      // toast.success(t('customerAdded'))
+      // setFormData({ name: '', phone: '', email: '', address: '' })
+      // fetchCustomers()
       
       // Redirect to products list after creation
-      router.push('/products');
+      // router.push('/products');
     } catch (error) {
       console.error('Error creating product:', error);
     } finally {
@@ -107,7 +126,7 @@ export default function CreateProduct() {
                   className="w-full border rounded-md p-2"
                   value={product.code}
                   onChange={(e) => setProduct({...product, code: e.target.value})}
-                  required
+                  // required
                 />
               </div>
               <div className="md:col-span-2">
@@ -157,8 +176,8 @@ export default function CreateProduct() {
                     type="number"
                     min="0"
                     className="w-full border rounded-md p-2"
-                    value={product.inStock}
-                    onChange={(e) => setProduct({...product, inStock: e.target.value})}
+                    value={product.stock}
+                    onChange={(e) => setProduct({...product, stock: e.target.value})}
                     required
                   />
                 </div>

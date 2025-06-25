@@ -1,64 +1,22 @@
-"use client";
+'use client';
 // pages/products/index.js
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useProducts } from '@/app/providers/ProductContext';
 
 export default function ProductInventory() {
-  const [products, setProducts] = useState([]);
+  // const [products, setProducts] = useState([]);
+  const { products, loading, error } = useProducts();
+  console.log(products);
   const [filter, setFilter] = useState('all');
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate API fetch
-    const fetchProducts = async () => {
-      setIsLoading(true);
-      // In a real app, you would fetch from your API
-      const mockProducts = [
-        {
-          productCode: 'CHAIR-001',
-          name: 'Office Chair Deluxe',
-          category: 'Furniture',
-          stock: 45,
-          reorderLevel: 10,
-          price: 129.99,
-          status: 'in-stock',
-          lastUpdated: '2023-11-15 09:23'
-        },
-        {
-          productCode: 'KB-2023',
-          name: 'Wireless Keyboard',
-          category: 'Electronics',
-          stock: 8,
-          reorderLevel: 15,
-          price: 49.99,
-          status: 'low-stock',
-          lastUpdated: '2023-11-16 14:12'
-        },
-        {
-          productCode: 'MON-24A',
-          name: '24" LED Monitor',
-          category: 'Electronics',
-          stock: 0,
-          reorderLevel: 5,
-          price: 179.99,
-          status: 'out-of-stock',
-          lastUpdated: '2023-11-17 10:45'
-        },
-        // Add more products as needed
-      ];
-      setProducts(mockProducts);
-      setIsLoading(false);
-    };
-
-    fetchProducts();
-  }, []);
 
   const filteredProducts = products.filter(product => {
     if (filter === 'all') return true;
-    if (filter === 'out-of-stock') return product.status === 'out-of-stock';
-    if (filter === 'low-stock') return product.status === 'low-stock';
+    // if (filter === 'out-of-stock') return product.status === 'out-of-stock';
+    // if (filter === 'low-stock') return product.status === 'low-stock';
     return true;
   });
+  console.log(filteredProducts);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -153,7 +111,7 @@ export default function ProductInventory() {
       </div>
 
       {/* Product Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      {/* <div className="bg-white rounded-lg shadow overflow-hidden">
         {isLoading ? (
           <div className="p-8 text-center">Loading products...</div>
         ) : (
@@ -173,7 +131,7 @@ export default function ProductInventory() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredProducts.map((product) => (
+                {products.map((product) => (
                   <tr key={product.productCode} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap font-medium">{product.productCode}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
@@ -201,7 +159,50 @@ export default function ProductInventory() {
             </table>
           </div>
         )}
-      </div>
+      </div> */}
+      <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Code</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Stock</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reorder Level</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {products.map((product) => (
+                  <tr key={product._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap font-medium">{product.productCode}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{product.stock}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{product.reorderLevel}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">${product.sellingPrice.toFixed(2)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(product.status)}`}>
+                        {getStatusText(product.status)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">{product.lastUpdated}</td>
+                    <td className="px-6 py-4 whitespace-nowrap space-x-2">
+                      <Link href={`/products/edit/${product.productCode}`} className="text-blue-600 hover:text-blue-800">
+                        Edit
+                      </Link>
+                      <Link href={`/products/view/${product.productCode}`} className="text-green-600 hover:text-green-800">
+                        View
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
       {/* Quick Stock Update */}
       <div className="bg-white p-4 rounded-lg shadow mt-6">
@@ -268,9 +269,11 @@ export default function ProductInventory() {
         <div className="space-x-2">
           <button className="bg-gray-200 px-4 py-2 rounded-md">Refresh Data</button>
           <button className="bg-gray-200 px-4 py-2 rounded-md">Print Report</button>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+          <Link 
+          href="/products/create"
+          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
             Add New Product
-          </button>
+          </Link>
         </div>
       </div>
     </div>

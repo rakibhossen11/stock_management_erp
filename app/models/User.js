@@ -2,19 +2,49 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
+// Create a separate counter schema for auto-increment
+const counterSchema = new mongoose.Schema({
+  _id: { type: String, required: true },
+  seq: { type: Number, default: 0 }
+});
+
+const Counter = mongoose.models.Counter || mongoose.model('Counter', counterSchema);
+
 const userSchema = new mongoose.Schema({
+  userId: { type: String, unique: true }, // Will store user_#00001 format
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['user', 'admin'], default: 'user' },
-  createdAt: { type: Date, default: Date.now }
+  role: { type: String, enum: ['user', 'admin', 'manager'], default: 'user' }, // Added more roles
+  createdAt: { type: Date, default: Date.now },
+  lastLogin: { type: Date }, // Track last login
+  isActive: { type: Boolean, default: true } // For soft deletion
 });
 
-// Hash password before saving
+// Middleware to auto-generate userId before saving
 userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-  this.password = await bcrypt.hash(this.password, 12);
-  next();
+  if (!this.isNew) return next();
+  
+  try {
+    // Increment the counter
+    const counter = await Counter.findByIdAndUpdate(
+      { _id: 'userId' },
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true }
+    );
+    
+    // Format the ID with leading zeros
+    this.userId = `user_#${String(counter.seq).padStart(5, '0')}`;
+    
+    // Hash password if modified
+    if (this.isModified('password')) {
+      this.password = await bcrypt.hash(this.password, 12);
+    }
+    
+    next();
+  } catch (err) {
+    next(err);
+  }
 });
 
 // Compare password method
@@ -22,120 +52,41 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
+// Virtual for public profile (excludes sensitive data)
+userSchema.virtual('profile').get(function() {
+  return {
+    userId: this.userId,
+    name: this.name,
+    email: this.email,
+    role: this.role,
+    createdAt: this.createdAt
+  };
+});
+
 export default mongoose.models.User || mongoose.model('User', userSchema);
-
-// import mongoose from 'mongoose';
-// import bcrypt from 'bcryptjs';  // Missing import
-// import dbConnect from '../lib/dbConnect';
-
-// const userSchema = new mongoose.Schema({
-//   username: {
-//     type: String,
-//     required: true,
-//     unique: true
-//   },
-//   email: {
-//     type: String,
-//     required: true,
-//     unique: true
-//   },
-//   password: {
-//     type: String,
-//     required: true
-//   },
-//   role: {
-//     type: String,
-//     enum: ['user', 'admin'],
-//     default: 'user'
-//   },
-//   createdAt: {
-//     type: Date,
-//     default: Date.now
-//   }
-// }, {
-//   collection: 'users'  // Custom collection name
-// });
-
-// // Hash password before saving
-// userSchema.pre('save', async function(next) {
-//   if (!this.isModified('password')) {
-//     return next();
-//   }
-
-//   try {
-//     const salt = await bcrypt.genSalt(10);
-//     this.password = await bcrypt.hash(this.password, salt);
-//     next();
-//   } catch (err) {
-//     next(err);
-//   }
-// });
-
-// // Method to compare entered password with hashed password
-// userSchema.methods.matchPassword = async function(enteredPassword) {
-//   return await bcrypt.compare(enteredPassword, this.password);
-// };
-
-// // Don't initialize connection here - let your route handlers manage connections
-// const User = mongoose.models.User || mongoose.model('User', userSchema);
-
-// export default User;
 
 // // models/User.js
 // import mongoose from 'mongoose';
-// import dbConnect from '../lib/dbConnect';
+// import bcrypt from 'bcryptjs';
 
 // const userSchema = new mongoose.Schema({
-//   username: {
-//     type: String,
-//     required: true,
-//     unique: true
-//   },
-//   email: {
-//     type: String,
-//     required: true,
-//     unique: true
-//   },
-//   password: {
-//     type: String,
-//     required: true
-//   },
-//   role: {
-//     type: String,
-//     enum: ['user', 'admin'],
-//     default: 'user'
-//   },
-//   createdAt: {
-//     type: Date,
-//     default: Date.now
-//   }
-// }, {
-//   collection: 'system_users'  // Custom collection name
+//   name: { type: String, required: true },
+//   email: { type: String, required: true, unique: true },
+//   password: { type: String, required: true },
+//   role: { type: String, enum: ['user', 'admin'], default: 'user' },
+//   createdAt: { type: Date, default: Date.now }
 // });
 
 // // Hash password before saving
 // userSchema.pre('save', async function(next) {
-//   if (!this.isModified('password')) {
-//     next();
-//   }
-
-//   const salt = await bcrypt.genSalt(10);
-//   this.password = await bcrypt.hash(this.password, salt);
+//   if (!this.isModified('password')) return next();
+//   this.password = await bcrypt.hash(this.password, 12);
+//   next();
 // });
 
-// // Method to compare entered password with hashed password
-// userSchema.methods.matchPassword = async function(enteredPassword) {
-//   return await bcrypt.compare(enteredPassword, this.password);
+// // Compare password method
+// userSchema.methods.comparePassword = async function(candidatePassword) {
+//   return await bcrypt.compare(candidatePassword, this.password);
 // };
 
-
-// // Initialize connection and model
-// let User;
-// try {
-//   await dbConnect();
-//   User = mongoose.models.User || mongoose.model('User', userSchema);
-// } catch (err) {
-//   console.error('Failed to initialize User model:', err);
-// }
-
-// export default User;
+// export default mongoose.models.User || mongoose.model('User', userSchema);

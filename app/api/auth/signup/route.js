@@ -1,14 +1,15 @@
 // app/api/auth/signup/route.js
 import User from '@/app/models/User';
-import { createToken, setAuthCookie } from '@/app/lib/auth';
 import { dbConnect } from '@/app/lib/dbConnect';
 import  jwt from 'jsonwebtoken';
 import { NextResponse } from 'next/server';
 
 export async function POST(request) {
+  // database connection
   await dbConnect();
   
   try {
+    // get data from client
     const { name, email, password } = await request.json();
     console.log(name,email,password);
     
@@ -22,13 +23,9 @@ export async function POST(request) {
       );
     }
     
-    // Create user
+    // Create user 
     const user = await User.create({ name, email, password });
     console.log(user)
-    
-    // Generate token and set cookie
-    // const token = createToken(user);
-    // setAuthCookie(token);
 
     // Create token
     const token = jwt.sign(
@@ -37,6 +34,7 @@ export async function POST(request) {
       { expiresIn: '7d' }
     );
     
+    // data response
     return NextResponse.json({
       success: true,
       user: { id: user._id, name: user.name, email: user.email },
@@ -44,6 +42,7 @@ export async function POST(request) {
     });
     
   } catch (error) {
+    // when show error
     return Response.json(
       { success: false, message: 'Registration failed' },
       { status: 500 }
