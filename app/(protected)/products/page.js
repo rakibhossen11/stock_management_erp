@@ -194,7 +194,7 @@ export default function ProductInventory() {
                       <Link href={`/products/edit/${product.productCode}`} className="text-blue-600 hover:text-blue-800">
                         Edit
                       </Link>
-                      <Link href={`/products/view/${product.productCode}`} className="text-green-600 hover:text-green-800">
+                      <Link href={`/products/view/${product._id}`} className="text-green-600 hover:text-green-800">
                         View
                       </Link>
                     </td>
