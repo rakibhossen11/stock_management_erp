@@ -183,7 +183,7 @@ export default function ProductInventory() {
                     <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{product.stock}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{product.reorderLevel}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">${product.sellingPrice.toFixed(2)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">${product.price.toFixed(2)}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(product.status)}`}>
                         {getStatusText(product.status)}

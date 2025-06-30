@@ -58,7 +58,7 @@ export default function Navbar() {
                 Products
               </Link>
               <Link 
-                href="/sales" 
+                href="/sales/invoices/create"
                 className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 text-gray-900 hover:text-blue-600"
               >
                 Sales

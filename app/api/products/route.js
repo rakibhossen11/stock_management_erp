@@ -3,135 +3,31 @@ import Product from "@/app/models/Product";
 import User from "@/app/models/User";
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-// import { generateToken } from '@/app/lib/jwt';
+import { getSession } from "@/app/lib/auth";
 
-export async function GET(request) {
-  try {
-    await dbConnect();
-
-    // Fetch all products from the database
-    const products = await Product.find({})
-      .sort({ createdAt: -1 }) // Sort by newest first
-      .select('-__v'); // Exclude the __v field
-
-    return NextResponse.json(
-      { 
-        success: true, 
-        count: products.length, 
-        data: products 
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    return NextResponse.json(
-      { 
-        success: false,
-        message: "Error fetching products",
-        error: error.message // Include error message for debugging
-      },
-      { status: 500 }
-    );
-  }
-}
-
-// POST create new product
-export async function POST(request) {
-  try {
-    await dbConnect();
-    // Get token from Authorization header
-    const authHeader = request.headers.get("authorization");
-    const token = authHeader?.split(" ")[1];
-    // console.log('token from api', token);
-
-    if (!token) {
-      return NextResponse.json(
-        { message: "No token provided" },
-        { status: 401 }
-      );
-    }
-
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Find user
-    const user = await User.findById(decoded.userId).select("-password");
-    // console.log('user', user);
-
-    if (!user) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
-    }
-
-    const body = await request.json();
-    // console.log(body);
-
-    const productData = {
-      ...body,
-      creatorCode: user.userId, // Store the user ID from the token
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      //   price: parseFloat(body.price) // Ensure price is a number
-    };
-    console.log(productData);
-
-    const products = new Product(productData);
-    await products.save();
-
-    return NextResponse.json(
-      { success: true, count: products.length, data: products },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error creating product:", error);
-    return NextResponse.json(
-      { message: "Error creating product" },
-      { status: 500 }
-    );
-  }
-}
-
-
-// import { NextResponse } from 'next/server';
-// import Product from '@/models/Product';
-// import dbConnect from '@/utils/dbConnect';
-
-// // GET all products with filtering and pagination
 // export async function GET(request) {
 //   try {
 //     await dbConnect();
 
-//     // Get query parameters from URL
+//      // Authentication
+//     const authHeader = request.headers.get("authorization");
+//     const token = authHeader?.split(" ")[1];
+
+//     // Get query parameters
 //     const { searchParams } = new URL(request.url);
 //     const page = parseInt(searchParams.get('page')) || 1;
-//     const limit = parseInt(searchParams.get('limit')) || 20;
-//     const category = searchParams.get('category');
-//     const search = searchParams.get('search');
-//     const minPrice = parseFloat(searchParams.get('minPrice'));
-//     const maxPrice = parseFloat(searchParams.get('maxPrice'));
-//     const sort = searchParams.get('sort') || '-createdAt';
+//     const limit = parseInt(searchParams.get('limit')) || 10;
+//     const skip = (page - 1) * limit;
 
-//     // Build query object
-//     const query = {};
-    
-//     if (category) query.category = category;
-//     if (search) query.name = { $regex: search, $options: 'i' };
-//     if (minPrice || maxPrice) {
-//       query.sellingPrice = {};
-//       if (minPrice) query.sellingPrice.$gte = minPrice;
-//       if (maxPrice) query.sellingPrice.$lte = maxPrice;
-//     }
-
-//     // Get total count for pagination
-//     const total = await Product.countDocuments(query);
-
-//     // Fetch products with filters
-//     const products = await Product.find(query)
-//       .sort(sort)
-//       .skip((page - 1) * limit)
-//       .limit(limit)
-//       .select('-__v')
-//       .populate('createdBy', 'name email') // Populate creator info
-//       .lean();
+//     // Fetch products with pagination
+//     const [products, total] = await Promise.all([
+//       Product.find({})
+//         .sort({ createdAt: -1 })
+//         .skip(skip)
+//         .limit(limit)
+//         .select('-__v'),
+//       Product.countDocuments()
+//     ]);
 
 //     return NextResponse.json({
 //       success: true,
@@ -144,13 +40,184 @@ export async function POST(request) {
 
 //   } catch (error) {
 //     console.error("Error fetching products:", error);
-//     return NextResponse.json(
-//       { 
-//         success: false,
-//         message: "Error fetching products",
-//         error: process.env.NODE_ENV === 'development' ? error.message : undefined
-//       },
-//       { status: 500 }
-//     );
+//     return NextResponse.json({
+//       success: false,
+//       message: "Error fetching products",
+//       error: process.env.NODE_ENV === 'development' ? error.message : undefined
+//     }, { status: 500 });
 //   }
 // }
+
+export async function GET(request) {
+  // const session = await getSession();
+  // console.log(session)
+  try {
+    await dbConnect();
+
+    // Authentication
+    const authHeader = request.headers.get("authorization");
+    console.log("60 line ",authHeader)
+    const token = authHeader?.split(" ")[1];
+     console.log("60 line ",token)
+    
+    // Verify token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (jwtError) {
+      return NextResponse.json(
+        { success: false, message: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
+    // Get user
+    const user = await User.findById(decoded.userId).select("-password");
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: "User not found" },
+        { status: 404 }
+      );
+    }
+    console.log(user);
+
+    // Get query parameters
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page')) || 1;
+    const limit = parseInt(searchParams.get('limit')) || 10;
+    const skip = (page - 1) * limit;
+
+    // Build query filter - only get products created by this user
+    const filter = { creatorId: decoded._id };
+
+    // Optional: Add search functionality
+    const search = searchParams.get('search');
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { category: { $regex: search, $options: 'i' } },
+        { productCode: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Fetch products with pagination
+    const [products, total] = await Promise.all([
+      Product.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .select('-__v'),
+      Product.countDocuments(filter)
+    ]);
+
+    return NextResponse.json({
+      success: true,
+      count: products.length,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+      data: products
+    }, { status: 200 });
+
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return NextResponse.json({
+      success: false,
+      message: "Error fetching products",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    }, { status: 500 });
+  }
+}
+
+export async function POST(request) {
+  try {
+   await dbConnect();
+    
+    // Authentication
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader?.split(" ")[1];
+    
+    if (!token) {
+      return NextResponse.json(
+        { success: false, message: "Authorization token required" },
+        { status: 401 }
+      );
+    }
+
+    // Verify token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (jwtError) {
+      return NextResponse.json(
+        { success: false, message: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
+    // Get user
+    const user = await User.findById(decoded.userId).select("-password");
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // Validate input
+    const body = await request.json();
+    // console.log(body);
+    if (!body.name || !body.category || !body.price) {
+      return NextResponse.json(
+        { success: false, message: "Missing required fields (name, category, price)" },
+        { status: 400 }
+      );
+    }
+
+    // ========== NEW PRODUCT CODE GENERATION LOGIC ==========
+    // Find the last product to determine next code
+    const lastProduct = await Product.findOne().sort({ productCode: -1 }).limit(1);
+    
+    let nextProductCode;
+    if (!lastProduct) {
+      // If no products exist, start with PRO_0001
+      nextProductCode = "PRO_0001";
+    } else {
+      // Extract number from last code and increment
+      const lastCodeNumber = parseInt(lastProduct.productCode.split('_')[1]);
+      const nextNumber = lastCodeNumber + 1;
+      nextProductCode = `PRO_${nextNumber.toString().padStart(4, '0')}`;
+    }
+    // ========== END OF NEW LOGIC ==========
+
+
+    // Create product
+    const productData = new Product({
+      ...body,
+      creatorId: user._id,
+      productCode: nextProductCode, // Now setting it explicitly
+      // productCode will be auto-generated by pre-save hook
+    });
+    // console.log("rebuuild",product);
+
+    const product = new Product(productData);
+    await product.save();
+
+    return NextResponse.json(
+      { success: true, data: product },
+      { status: 201 }
+    );
+    
+  } catch (error) {
+    if (error.code === 11000) {
+      return NextResponse.json(
+        { error: 'Duplicate product code' },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json(
+      { error: 'Internal server error', details: error.message },
+      { status: 500 }
+    );
+  }
+}

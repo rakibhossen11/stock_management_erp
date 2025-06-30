@@ -1,23 +1,28 @@
-// app/(protected)/products/create/page.jsx
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FiSave, FiPlus, FiX } from 'react-icons/fi';
+import CategorySelector from '@/app/components/Category';
+import SupplierSelector from '@/app/components/Supplier';
+import { useProducts } from '@/app/providers/ProductContext';
 
+
+
+// product creation function start form here 
 export default function CreateProduct() {
+  const {createProduct, suppliers,categories} = useProducts();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Form state
   const [product, setProduct] = useState({
     name: '',
-    productCode: '',
     description: '',
     category: '',
     provider: '',
     purchasePrice: '',
-    sellingPrice: '',
+    price: '',
     stock: '',
     reorderLevel: '',
     unit: 'pcs',
@@ -29,38 +34,8 @@ export default function CreateProduct() {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    
-    try {
-      // Check if we have a token
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-        console.log('token', token);
-      // Replace with actual API call
-      console.log('Creating product:', product);
-      const res = await fetch('/api/products', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` // Add the Authorization header
-        },
-        body: JSON.stringify(product),
-      })
-      
-      // const data = await res.json()
-      
-      // if (!res.ok) throw new Error(data.error || 'Failed to add customer')
-      
-      // toast.success(t('customerAdded'))
-      // setFormData({ name: '', phone: '', email: '', address: '' })
-      // fetchCustomers()
-      
-      // Redirect to products list after creation
-      // router.push('/products');
-    } catch (error) {
-      console.error('Error creating product:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    // console.log(product);
+    createProduct(product);
   };
 
   // Handle image upload
@@ -89,6 +64,14 @@ export default function CreateProduct() {
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
     }));
+  };
+
+   const handleCategoryChange = (categoryId) => {
+    setProduct({ ...product, category: categoryId });
+  };
+
+  const handleSupplierChange = (supplierId) => {
+    setProduct({ ...product, supplier: supplierId });
   };
 
   return (
@@ -144,31 +127,8 @@ export default function CreateProduct() {
           <div className="border-b pb-6 mb-6">
             <h2 className="text-lg font-semibold mb-4">Inventory Details</h2>
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category*</label>
-                <select
-                  className="w-full border rounded-md p-2"
-                  value={product.category}
-                  onChange={(e) => setProduct({...product, category: e.target.value})}
-                  required
-                >
-                  <option value="">Select Category</option>
-                  <option value="electronics">Electronics</option>
-                  <option value="furniture">Furniture</option>
-                  <option value="office-supplies">Office Supplies</option>
-                  <option value="breakroom">Breakroom</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Provider/Supplier*</label>
-                <input
-                  type="text"
-                  className="w-full border rounded-md p-2"
-                  value={product.provider}
-                  onChange={(e) => setProduct({...product, provider: e.target.value})}
-                  required
-                />
-              </div>
+              <CategorySelector categories={categories} onChange={handleCategoryChange}  />
+              <SupplierSelector suppliers={suppliers} onChange={handleSupplierChange} />
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">In Stock*</label>
@@ -241,8 +201,8 @@ export default function CreateProduct() {
                       min="0"
                       step="0.01"
                       className="w-full border rounded-md p-2 pl-8"
-                      value={product.sellingPrice}
-                      onChange={(e) => setProduct({...product, sellingPrice: e.target.value})}
+                      value={product.price}
+                      onChange={(e) => setProduct({...product, price: e.target.value})}
                       required
                     />
                   </div>

@@ -97,3 +97,35 @@ export async function POST(request) {
   }
 }
 
+
+
+export async function GET(request) {
+  try {
+    await dbConnect();
+
+    // Fetch all products from the database
+    const sales = await Sale.find({})
+      .sort({ createdAt: -1 }) // Sort by newest first
+      .select('-__v'); // Exclude the __v field
+
+    return NextResponse.json(
+      { 
+        success: true, 
+        count: sales.length, 
+        data: sales 
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return NextResponse.json(
+      { 
+        success: false,
+        message: "Error fetching products",
+        error: error.message // Include error message for debugging
+      },
+      { status: 500 }
+    );
+  }
+}
+
