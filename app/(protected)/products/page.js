@@ -21,6 +21,21 @@ export default function ProductInventory() {
   });
   console.log(filteredProducts);
 
+  // Calculate total stock value
+  const totalStockValue = products.reduce(
+    (sum, product) => sum + (product.price * product.stock),
+    0
+  );
+  const totalStockItem = products.reduce(
+    (sum, product) => sum + (product.price * product.stock),
+    0
+  );
+  const totalStockQuantity = products.reduce(
+    (sum, product) => sum + (product.stock || 0),
+    0
+  );
+  console.log(totalStockQuantity);
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'out-of-stock': return 'bg-red-100 text-red-800';
@@ -51,12 +66,16 @@ export default function ProductInventory() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="text-gray-500">Total Products</h3>
-          <p className="text-2xl font-bold">1,245</p>
+          <p className="text-2xl font-bold">{products.length}</p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-gray-500">Stock Items Value</h3>
+          <p className="text-2xl font-bold text-yellow-600">{totalStockValue}</p>
+        </div>
+        {/* <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="text-gray-500">Low Stock Items</h3>
           <p className="text-2xl font-bold text-yellow-600">37</p>
-        </div>
+        </div> */}
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="text-gray-500">Out of Stock</h3>
           <p className="text-2xl font-bold text-red-600">12</p>
@@ -177,10 +196,10 @@ export default function ProductInventory() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Name</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Stock</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reorder Level</th>
+                  {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reorder Level</th> */}
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
+                  {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th> */}
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
@@ -191,7 +210,7 @@ export default function ProductInventory() {
                     <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{product.stock}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{product.reorderLevel}</td>
+                    {/* <td className="px-6 py-4 whitespace-nowrap">{product.reorderLevel}</td> */}
                     <td className="px-6 py-4 whitespace-nowrap">${product.price.toFixed(2)}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(product.status)}`}>

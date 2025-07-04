@@ -85,8 +85,7 @@ export function AuthProvider({ children }) {
       });
 
       if (response.ok) {
-        const { user: userData, token } = await response.json();
-        localStorage.setItem('token', token);
+        const { user: userData } = await response.json();
         setUser(userData);
         router.push('/dashboard');
       } else {
@@ -134,17 +133,11 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
+  const logout = async() => {
+    await fetch('/api/auth/signout',{ method: 'POST' });
     setUser(null);
-    router.push('/auth/login');
+    router.push('/auth/signin');
   };
-
-  // const logout = async () => {
-  //   await fetch('/api/auth/signout', { method: 'POST' });
-  //   setUser(null);
-  //   router.push('/auth/login');
-  // };
 
   const checkSession = async () => {
     try {

@@ -6,33 +6,12 @@ import jwt from "jsonwebtoken";
 import { getSession } from "@/app/lib/auth";
 
 export async function POST(request) {
+  const session = await getSession();
   try {
    await dbConnect();
-    
-    // Authentication
-    const authHeader = request.headers.get("authorization");
-    const token = authHeader?.split(" ")[1];
-    
-    if (!token) {
-      return NextResponse.json(
-        { success: false, message: "Authorization token required" },
-        { status: 401 }
-      );
-    }
-
-    // Verify token
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (jwtError) {
-      return NextResponse.json(
-        { success: false, message: "Invalid token" },
-        { status: 401 }
-      );
-    }
 
     // Get user
-    const user = await User.findById(decoded.userId).select("-password");
+    const user = await User.findById(session.user._id).select("-password");
     if (!user) {
       return NextResponse.json(
         { success: false, message: "User not found" },
