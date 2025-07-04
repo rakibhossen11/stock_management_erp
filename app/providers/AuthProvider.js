@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
 
@@ -12,68 +13,29 @@ export function AuthProvider({ children }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  //  useEffect(() => {
-  //   async function loadUser() {
-  //     try {
-  //       // Check if we have a token
-  //       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-        
-  //       if (token) {
-  //         // Verify token with backend
-  //         const response = await fetch('/api/auth/verify', {
-  //           headers: {
-  //             'Authorization': `Bearer ${token}`
-  //           }
-  //         });
-          
-  //         if (response.ok) {
-  //           const userData = await response.json();
-  //           setUser(userData);
-  //         } else {
-  //           // Token is invalid, clear it
-  //           localStorage.removeItem('token');
-  //         }
-  //       }
-  //     } catch (error) {
-  //       console.error('Error loading user:', error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   }
 
-  //   loadUser();
-  // }, []);
+  // check session always user if are login or not 
+   const checkSession = async () => {
+    try {
+      toast.loading("Check Authentication..");
+      const res = await fetch('/api/auth/session');
+      const data = await res.json();
+      console.log(data);
+      setUser(data.session.user || null);
+      toast.success("Authenticated!");
+    } catch (error) {
+      console.error('Session check failed:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // const checkSession = async () => {
-  //   try {
-  //     const res = await fetch('/api/auth/session');
-  //     console.log(res);
-  //     const data = await res.json();
-  //     console.log(data);
-  //     // setUser(data.session || null);
-  //   } catch (error) {
-  //     console.error('Session check failed:', error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+  // user check effect
+   useEffect(() => {
+    checkSession();
+  }, []);
 
-  // useEffect(() => {
-  //   const checkAuth = async () => {
-  //     try {
-  //       const res = await fetch('/api/auth/session');
-  //       const data = await res.json();
-  //       if (data.user) setUser(data.user);
-  //     } catch (error) {
-  //       console.error('Session check failed', error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   checkAuth();
-  // }, [pathname]);
-
-
+  // user login if existing
   const login = async (email, password) => {
     try {
       const response = await fetch('/api/auth/signin', {
@@ -106,55 +68,27 @@ export function AuthProvider({ children }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password }),
       });
-      console.log(response);
+      // console.log(response);
 
       if (response.ok) {
-        const { user: userData, token } = await response.json();
-        localStorage.setItem('token', token);
+        const { user: userData } = await response.json();
         setUser(userData);
         router.push('/dashboard');
       } else {
         throw new Error('Register failed');
       }
-
-      // if (!res.ok) {
-      //   const error = await res.json();
-      //   throw new Error(error.error);
-      // }
-
-      // const data = await res.json();
-      // console.log("re",data);
-      // setUser(data.user);
-      // router.push('/dashboard');
-      // return data;
     } catch (error) {
       console.error('Register error:', error);
       throw error;
     }
   };
 
+  // user logout
   const logout = async() => {
     await fetch('/api/auth/signout',{ method: 'POST' });
     setUser(null);
     router.push('/auth/signin');
   };
-
-  const checkSession = async () => {
-    try {
-      const res = await fetch('/api/auth/session');
-      const data = await res.json();
-      console.log(data);
-      setUser(data.session.user || null);
-    } catch (error) {
-      console.error('Session check failed:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    checkSession();
-  }, []);
 
   return (
     <AuthContext.Provider
@@ -179,7 +113,3 @@ export function useAuth() {
   }
   return context;
 }
-
-// export function useAuth() {
-//   return useContext(AuthContext);
-// }

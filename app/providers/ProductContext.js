@@ -56,7 +56,7 @@ export function ProductProvider({ children }) {
   const createProduct = async (productData) => {
     console.log(productData);
     const toastId = toast.loading("Creating product...");
-  setIsSubmitting(true);
+    setIsSubmitting(true);
 
   try {
     // Get token from localStorage

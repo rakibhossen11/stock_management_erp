@@ -5,6 +5,7 @@ import { dbConnect } from "./dbConnect";
 import User from "@/app/models/User";
 import Session from "../models/Session";
 
+// session time
 const SESSION_EXPIRY_HOURS = 24;
 
 // Verify password
@@ -13,6 +14,7 @@ export async function verifyPassword(password, hash) {
   return await bcrypt.compare(password, hash);
 }
 
+// create session when user login or register
 export async function createSession(userId) {
   await dbConnect()
   
@@ -39,6 +41,7 @@ export async function createSession(userId) {
   return sessionId
 }
 
+// user get with session
 export async function getSession() {
   try {
     await dbConnect()
@@ -81,6 +84,7 @@ export async function getSession() {
   }
 }
 
+// user logout syatem with session
 export async function deleteSession() {
   try {
     await dbConnect()
