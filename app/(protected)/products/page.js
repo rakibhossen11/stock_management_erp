@@ -3,11 +3,14 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useProducts } from '@/app/providers/ProductContext';
+import { useAuth } from '@/app/providers/AuthProvider';
+import { useRouter } from 'next/navigation';
 
 export default function ProductInventory() {
-  // const [products, setProducts] = useState([]);
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const { products, loading, error } = useProducts();
-  console.log(products);
+  // console.log(products);
   const [filter, setFilter] = useState('all');
 
   const filteredProducts = products.filter(product => {
@@ -33,6 +36,12 @@ export default function ProductInventory() {
       default: return 'In Stock';
     }
   };
+
+  // useEffect(() => {
+  //   if (!loading && !user) {
+  //     router.replace("/auth/signin");
+  //   }
+  // }, [user, loading, router]);
 
   return (
     <div className="container mx-auto px-4 py-8">

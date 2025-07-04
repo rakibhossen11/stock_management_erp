@@ -9,7 +9,7 @@ import { usePathname, useRouter } from 'next/navigation';
 
 export default function Navbar() {
   const { user, loading, logout } = useAuth();
-  // console.log("from header",user); 
+  console.log("from header",user);
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
@@ -33,7 +33,7 @@ export default function Navbar() {
   };
 
   // Don't show nav on auth pages
-//   if (pathname === '/auth/signin' || pathname === '/auth/signup') return null;
+  //   if (pathname === '/auth/signin' || pathname === '/auth/signup') return null;
 
   return (
     <nav className="bg-white shadow-lg">

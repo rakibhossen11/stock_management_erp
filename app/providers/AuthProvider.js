@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 const AuthContext = createContext();
 
@@ -10,38 +10,39 @@ export function AuthProvider({ children }) {
   // console.log("from context",user);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
-   useEffect(() => {
-    async function loadUser() {
-      try {
-        // Check if we have a token
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  //  useEffect(() => {
+  //   async function loadUser() {
+  //     try {
+  //       // Check if we have a token
+  //       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
         
-        if (token) {
-          // Verify token with backend
-          const response = await fetch('/api/auth/verify', {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
+  //       if (token) {
+  //         // Verify token with backend
+  //         const response = await fetch('/api/auth/verify', {
+  //           headers: {
+  //             'Authorization': `Bearer ${token}`
+  //           }
+  //         });
           
-          if (response.ok) {
-            const userData = await response.json();
-            setUser(userData);
-          } else {
-            // Token is invalid, clear it
-            localStorage.removeItem('token');
-          }
-        }
-      } catch (error) {
-        console.error('Error loading user:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
+  //         if (response.ok) {
+  //           const userData = await response.json();
+  //           setUser(userData);
+  //         } else {
+  //           // Token is invalid, clear it
+  //           localStorage.removeItem('token');
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error('Error loading user:', error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
 
-    loadUser();
-  }, []);
+  //   loadUser();
+  // }, []);
 
   // const checkSession = async () => {
   //   try {
@@ -56,6 +57,22 @@ export function AuthProvider({ children }) {
   //     setLoading(false);
   //   }
   // };
+
+  // useEffect(() => {
+  //   const checkAuth = async () => {
+  //     try {
+  //       const res = await fetch('/api/auth/session');
+  //       const data = await res.json();
+  //       if (data.user) setUser(data.user);
+  //     } catch (error) {
+  //       console.error('Session check failed', error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   checkAuth();
+  // }, [pathname]);
+
 
   const login = async (email, password) => {
     try {
@@ -129,8 +146,21 @@ export function AuthProvider({ children }) {
   //   router.push('/auth/login');
   // };
 
+  const checkSession = async () => {
+    try {
+      const res = await fetch('/api/auth/session');
+      const data = await res.json();
+      console.log(data);
+      setUser(data.session.user || null);
+    } catch (error) {
+      console.error('Session check failed:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    // checkSession();
+    checkSession();
   }, []);
 
   return (
@@ -141,6 +171,7 @@ export function AuthProvider({ children }) {
         login,
         register,
         logout,
+        checkSession
       }}
     >
       {children}
@@ -149,5 +180,13 @@ export function AuthProvider({ children }) {
 }
 
 export function useAuth() {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 }
+
+// export function useAuth() {
+//   return useContext(AuthContext);
+// }

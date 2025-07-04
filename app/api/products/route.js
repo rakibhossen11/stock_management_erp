@@ -5,130 +5,6 @@ import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { getSession } from "@/app/lib/auth";
 
-// export async function GET(request) {
-//   try {
-//     await dbConnect();
-
-//      // Authentication
-//     const authHeader = request.headers.get("authorization");
-//     const token = authHeader?.split(" ")[1];
-
-//     // Get query parameters
-//     const { searchParams } = new URL(request.url);
-//     const page = parseInt(searchParams.get('page')) || 1;
-//     const limit = parseInt(searchParams.get('limit')) || 10;
-//     const skip = (page - 1) * limit;
-
-//     // Fetch products with pagination
-//     const [products, total] = await Promise.all([
-//       Product.find({})
-//         .sort({ createdAt: -1 })
-//         .skip(skip)
-//         .limit(limit)
-//         .select('-__v'),
-//       Product.countDocuments()
-//     ]);
-
-//     return NextResponse.json({
-//       success: true,
-//       count: products.length,
-//       total,
-//       page,
-//       pages: Math.ceil(total / limit),
-//       data: products
-//     }, { status: 200 });
-
-//   } catch (error) {
-//     console.error("Error fetching products:", error);
-//     return NextResponse.json({
-//       success: false,
-//       message: "Error fetching products",
-//       error: process.env.NODE_ENV === 'development' ? error.message : undefined
-//     }, { status: 500 });
-//   }
-// }
-
-export async function GET(request) {
-  // const session = await getSession();
-  // console.log(session)
-  try {
-    await dbConnect();
-
-    // Authentication
-    const authHeader = request.headers.get("authorization");
-    console.log("60 line ",authHeader)
-    const token = authHeader?.split(" ")[1];
-     console.log("60 line ",token)
-    
-    // Verify token
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (jwtError) {
-      return NextResponse.json(
-        { success: false, message: "Invalid token" },
-        { status: 401 }
-      );
-    }
-
-    // Get user
-    const user = await User.findById(decoded.userId).select("-password");
-    if (!user) {
-      return NextResponse.json(
-        { success: false, message: "User not found" },
-        { status: 404 }
-      );
-    }
-    console.log(user);
-
-    // Get query parameters
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page')) || 1;
-    const limit = parseInt(searchParams.get('limit')) || 10;
-    const skip = (page - 1) * limit;
-
-    // Build query filter - only get products created by this user
-    const filter = { creatorId: decoded._id };
-
-    // Optional: Add search functionality
-    const search = searchParams.get('search');
-    if (search) {
-      filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { category: { $regex: search, $options: 'i' } },
-        { productCode: { $regex: search, $options: 'i' } }
-      ];
-    }
-
-    // Fetch products with pagination
-    const [products, total] = await Promise.all([
-      Product.find(filter)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .select('-__v'),
-      Product.countDocuments(filter)
-    ]);
-
-    return NextResponse.json({
-      success: true,
-      count: products.length,
-      total,
-      page,
-      pages: Math.ceil(total / limit),
-      data: products
-    }, { status: 200 });
-
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    return NextResponse.json({
-      success: false,
-      message: "Error fetching products",
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    }, { status: 500 });
-  }
-}
-
 export async function POST(request) {
   try {
    await dbConnect();
@@ -217,6 +93,42 @@ export async function POST(request) {
     }
     return NextResponse.json(
       { error: 'Internal server error', details: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+
+export async function GET(request) {
+  const session = await getSession();
+  // console.log('product page',session);
+  try {
+    await dbConnect();
+     // Check if user is authenticated
+  if (!session) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
+  const products = await Product.find({ creatorId: session.user._id });
+  console.log(products)
+
+  return NextResponse.json(
+      { 
+        success: true, 
+        count: products.length, 
+        data: products 
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { 
+        error: 'Something else',
+        details: error.message 
+      },
       { status: 500 }
     );
   }

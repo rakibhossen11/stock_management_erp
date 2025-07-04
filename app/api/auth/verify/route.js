@@ -10,6 +10,7 @@ export async function GET(request) {
     
     // Get token from Authorization header
     const authHeader = request.headers.get('authorization');
+    console.log('authheader', authHeader);
     const token = authHeader?.split(' ')[1];
     console.log('token', token);
     
