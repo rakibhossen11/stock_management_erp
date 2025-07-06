@@ -38,6 +38,7 @@ export function AuthProvider({ children }) {
   // user login if existing
   const login = async (email, password) => {
     try {
+      toast.loading("Login...");
       const response = await fetch('/api/auth/signin', {
         method: 'POST',
         headers: {
@@ -49,6 +50,7 @@ export function AuthProvider({ children }) {
       if (response.ok) {
         const { user: userData } = await response.json();
         setUser(userData);
+        toast.success("Login Succesful !");
         router.push('/dashboard');
       } else {
         throw new Error('Login failed');
@@ -61,8 +63,9 @@ export function AuthProvider({ children }) {
 
   //   user registration
   const register = async (name, email, password) => {
-    console.log("register",name, email, password);
+    // console.log("register",name, email, password);
     try {
+      toast.loading("User creating");
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -73,6 +76,7 @@ export function AuthProvider({ children }) {
       if (response.ok) {
         const { user: userData } = await response.json();
         setUser(userData);
+        toast.success("User created Succesfuliy");
         router.push('/dashboard');
       } else {
         throw new Error('Register failed');
@@ -87,6 +91,7 @@ export function AuthProvider({ children }) {
   const logout = async() => {
     await fetch('/api/auth/signout',{ method: 'POST' });
     setUser(null);
+    toast.success("Logout");
     router.push('/auth/signin');
   };
 
