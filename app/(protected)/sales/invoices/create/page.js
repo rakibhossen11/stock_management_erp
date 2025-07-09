@@ -22,7 +22,9 @@ const demoCustomers = [
 ];
 
 export default function CreateInvoicePage() {
-  const { products, createInvoice} = useProducts();
+  // const { products, createInvoice} = useProducts();
+  const { products, createInvoice, loading, error } = useProducts();
+  console.log(products);
   // console.log(products)
   // Form state
   const [invoice, setInvoice] = useState({
@@ -44,6 +46,8 @@ export default function CreateInvoicePage() {
   const [quantities, setQuantities] = useState({});
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [newCustomer, setNewCustomer] = useState({ name: "", email: "" });
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Filter products
   const filteredProducts = products.filter(
@@ -102,7 +106,7 @@ export default function CreateInvoicePage() {
             id: product._id,
             code: product.code,
             name: product.name,
-            price: product.sellingPrice,
+            price: product.price,
             taxRate: product.taxRate,
             quantity: 1, // Default to 1 since we're not managing quantities
           });
@@ -220,7 +224,42 @@ export default function CreateInvoicePage() {
   };
 
   // Generate invoice
-  const generateInvoice = () => {
+  // const generateInvoice = () => {
+  //   const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`;
+  //   const invoiceData = {
+  //     ...invoice,
+  //     invoiceNumber,
+  //     subtotal,
+  //     tax,
+  //     total,
+  //     date: new Date().toISOString(),
+  //   };
+
+  //   // In a real app, you would save to database here
+  //   // console.log("Invoice generated:", invoiceData);
+  //   createInvoice(invoiceData);
+  //   // alert(
+  //   //   `Invoice ${invoiceNumber} created successfully!\nTotal: $${total.toFixed(
+  //   //     2
+  //   //   )}`
+  //   // );
+
+  //   // Reset form
+  //   // setInvoice({
+  //   //   customer: null,
+  //   //   date: new Date().toISOString().split("T")[0],
+  //   //   dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+  //   //     .toISOString()
+  //   //     .split("T")[0],
+  //   //   items: [],
+  //   //   notes: "",
+  //   //   terms: "Payment due within 7 days",
+  //   // });
+  // };
+
+
+  // Generate invoice
+  const generateInvoice = async () => {
     const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`;
     const invoiceData = {
       ...invoice,
@@ -231,26 +270,26 @@ export default function CreateInvoicePage() {
       date: new Date().toISOString(),
     };
 
-    // In a real app, you would save to database here
-    // console.log("Invoice generated:", invoiceData);
-    createInvoice(invoiceData);
-    // alert(
-    //   `Invoice ${invoiceNumber} created successfully!\nTotal: $${total.toFixed(
-    //     2
-    //   )}`
-    // );
-
-    // Reset form
-    // setInvoice({
-    //   customer: null,
-    //   date: new Date().toISOString().split("T")[0],
-    //   dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-    //     .toISOString()
-    //     .split("T")[0],
-    //   items: [],
-    //   notes: "",
-    //   terms: "Payment due within 7 days",
-    // });
+    try {
+      await createInvoice(invoiceData);
+      setSuccessMessage(`Invoice ${invoiceNumber} created successfully!`);
+      setShowSuccessModal(true);
+      
+      // Reset form after successful creation
+      setInvoice({
+        customer: null,
+        date: new Date().toISOString().split("T")[0],
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0],
+        items: [],
+        notes: "",
+        terms: "Payment due within 7 days",
+      });
+    } catch (err) {
+      console.error("Error creating invoice:", err);
+      // You might want to show an error message here
+    }
   };
 
   return (
@@ -604,7 +643,7 @@ export default function CreateInvoicePage() {
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            ${product.sellingPrice.toFixed(2)}
+                            ${product.price?.toFixed(2)}
                           </td>
                           <td className="px-6 py-4">
                             {product.taxRate * 100}%
@@ -711,6 +750,46 @@ export default function CreateInvoicePage() {
                   }`}
                 >
                   Add Customer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-lg font-semibold">Success!</h3>
+                <button
+                  onClick={() => setShowSuccessModal(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <FiX size={20} />
+                </button>
+              </div>
+              
+              <div className="mb-6">
+                <div className="flex justify-center mb-4">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                    <FiCheck className="text-green-600 text-3xl" />
+                  </div>
+                </div>
+                <p className="text-center text-gray-700">{successMessage}</p>
+                <p className="text-center text-gray-700 mt-2">
+                  Total: ${total.toFixed(2)}
+                </p>
+              </div>
+
+              <div className="flex justify-center">
+                <button
+                  onClick={() => setShowSuccessModal(false)}
+                  className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Close
                 </button>
               </div>
             </div>

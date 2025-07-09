@@ -1,6 +1,7 @@
 // app/sales/page.js
 'use client';
 
+import { useProducts } from '@/app/providers/ProductContext';
 import { useState, useEffect } from 'react';
 import { FiShoppingCart, FiPlus, FiMinus, FiTrash2, FiUser, FiSearch, FiPrinter } from 'react-icons/fi';
 

@@ -45,7 +45,7 @@ const saleSchema = new mongoose.Schema({
   invoiceNumber: {
     type: String,
     // required: true,
-    unique: true,
+    // unique: true,
     // index: true, // Improves query performance
   },
   customer: {
@@ -55,6 +55,11 @@ const saleSchema = new mongoose.Schema({
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    // required: true,
+  },
+  userCode: {
+    type: String,
     ref: 'User',
     // required: true,
   },
@@ -75,7 +80,7 @@ const saleSchema = new mongoose.Schema({
   },
   tax: {
     type: Number,
-    required: true,
+    required: false,
     min: 0,
   },
   discount: {
@@ -85,7 +90,7 @@ const saleSchema = new mongoose.Schema({
   },
   total: {
     type: Number,
-    required: true,
+    required: false,
     min: 0,
   },
   notes: {
@@ -117,37 +122,37 @@ const saleSchema = new mongoose.Schema({
 });
 
 // Sequential invoice number generator
-saleSchema.pre('save', async function(next) {
-  if (!this.isNew) {
-    this.updatedAt = Date.now();
-    return next();
-  }
+// saleSchema.pre('save', async function(next) {
+//   if (!this.isNew) {
+//     this.updatedAt = Date.now();
+//     return next();
+//   }
 
-  try {
-    // Get or create counter
-    const counter = await Counter.findByIdAndUpdate(
-      { _id: 'invoiceNumber' },
-      { $inc: { seq: 1 } },
-      { new: true, upsert: true }
-    );
+//   try {
+//     // Get or create counter
+//     const counter = await Counter.findByIdAndUpdate(
+//       { _id: 'invoiceNumber' },
+//       { $inc: { seq: 1 } },
+//       { new: true, upsert: true }
+//     );
 
-    // Format as INV-00001, INV-00002, etc.
-    this.invoiceNumber = `INV-${counter.seq.toString().padStart(5, '0')}`;
-    next();
-  } catch (error) {
-    console.error('Error generating invoice number:', error);
+//     // Format as INV-00001, INV-00002, etc.
+//     this.invoiceNumber = `INV-${counter.seq.toString().padStart(5, '0')}`;
+//     next();
+//   } catch (error) {
+//     console.error('Error generating invoice number:', error);
     
-    // Fallback to timestamp if counter fails
-    this.invoiceNumber = `INV-${Date.now()}`;
-    next();
-  }
-});
+//     // Fallback to timestamp if counter fails
+//     this.invoiceNumber = `INV-${Date.now()}`;
+//     next();
+//   }
+// });
 
-// Update `updatedAt` on document updates
-saleSchema.pre('findOneAndUpdate', function (next) {
-  this.set({ updatedAt: Date.now() });
-  next();
-});
+// // Update `updatedAt` on document updates
+// saleSchema.pre('findOneAndUpdate', function (next) {
+//   this.set({ updatedAt: Date.now() });
+//   next();
+// });
 
 const Sale = mongoose.models.Sale || mongoose.model('Sale', saleSchema);
 
